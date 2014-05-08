@@ -11,11 +11,11 @@
 (function($) {
   var selectors = [];
 
-  var check_binded = false;
   var check_lock = false;
   var defaults = {
     interval: 250,
-    force_process: false
+    force_process: false,
+    scroll_selector: window
   }
   var $window = $(window);
 
@@ -64,9 +64,11 @@
   $.fn.extend({
     // watching for element's appearance in browser viewport
     appear: function(options) {
+
       var opts = $.extend({}, defaults, options || {});
       var selector = this.selector || this;
-      if (!check_binded) {
+
+      if( typeof $(opts.scroll_selector).data('appear_binded') === 'undefined' ) {
         var on_check = function() {
           if (check_lock) {
             return;
@@ -76,8 +78,10 @@
           setTimeout(process, opts.interval);
         };
 
-        $(window).scroll(on_check).resize(on_check);
-        check_binded = true;
+        $(opts.scroll_selector).on('scroll',on_check);
+        $(window).resize(on_check);
+
+        $(opts.scroll_selector).data('appear_binded',true);
       }
 
       if (opts.force_process) {
@@ -91,7 +95,7 @@
   $.extend({
     // force elements's appearance check
     force_appear: function() {
-      if (check_binded) {
+      if( typeof $(opts.scroll_selector).data('appear_binded') !== 'undefined' ) {
         process();
         return true;
       };
